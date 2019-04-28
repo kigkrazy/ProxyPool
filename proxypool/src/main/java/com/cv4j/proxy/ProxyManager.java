@@ -42,59 +42,31 @@ public class ProxyManager {
 
         Flowable.fromIterable(ProxyPool.proxyMap.keySet())
                 .parallel(ProxyPool.proxyMap.size())
-                .map(new Function<String, List<Proxy>>() {
-                    @Override
-                    public List<Proxy> apply(String s) throws Exception {
+                .map(s -> new ProxyPageCallable(s).call())
+                .flatMap((Function<List<Proxy>, Publisher<Proxy>>) proxies -> {
+                    if (Preconditions.isNotBlank(proxies)) {
+                        List<Proxy> result = proxies
+                                .stream()
+                                .parallel()
+                                .filter(proxy -> {
+                                    HttpHost httpHost = new HttpHost(proxy.getIp(), proxy.getPort(), proxy.getType());
+                                    boolean result1 = HttpManager.get().checkProxy(httpHost);
+                                    if(result1) log.info("checkProxy " + proxy.getProxyStr() +", "+ result1);
+                                    return result1;
+                                }).collect(Collectors.toList());
 
-                        try {
-                            return new ProxyPageCallable(s).call();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        return new ArrayList<Proxy>();
+                        return Flowable.fromIterable(result);
                     }
-                })
-                .flatMap(new Function<List<Proxy>, Publisher<Proxy>>() {
-                    @Override
-                    public Publisher<Proxy> apply(List<Proxy> proxies) throws Exception {
-                        if (Preconditions.isNotBlank(proxies)) {
-                            List<Proxy> result = proxies
-                                    .stream()
-                                    .parallel()
-                                    .filter(new Predicate<Proxy>() {
-                                        @Override
-                                        public boolean test(Proxy proxy) {
-                                            HttpHost httpHost = new HttpHost(proxy.getIp(), proxy.getPort(), proxy.getType());
-                                            boolean result = HttpManager.get().checkProxy(httpHost);
-                                            if(result) log.info("checkProxy " + proxy.getProxyStr() +", "+result);
-                                            return result;
-                                        }
-                                    }).collect(Collectors.toList());
-
-                            return Flowable.fromIterable(result);
-                        }
-
-                        return Flowable.empty();
-                    }
+                    return Flowable.empty();
                 })
                 .runOn(Schedulers.io())
                 .sequential()
-                .subscribe(new Consumer<Proxy>() {
-                    @Override
-                    public void accept(Proxy proxy) throws Exception {
-
-                        if (proxy!=null) {
-                            log.info("accept " + proxy.getProxyStr());
-                            proxy.setLastSuccessfulTime(new Date().getTime());
-                            ProxyPool.proxyList.add(proxy);
-                        }
+                .subscribe(proxy -> {
+                    if (proxy!=null) {
+                        log.info("accept " + proxy.getProxyStr());
+                        proxy.setLastSuccessfulTime(new Date().getTime());
+                        ProxyPool.proxyList.add(proxy);
                     }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        log.error("ProxyManager is error: "+throwable.getMessage());
-                    }
-                });
+                }, throwable -> log.error("ProxyManager is error: "+throwable.getMessage()));
     }
 }
