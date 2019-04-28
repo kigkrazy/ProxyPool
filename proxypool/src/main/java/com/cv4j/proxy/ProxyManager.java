@@ -54,7 +54,6 @@ public class ProxyManager {
                                     if(result1) log.info("checkProxy " + proxy.getProxyStr() +", "+ result1);
                                     return result1;
                                 }).collect(Collectors.toList());
-
                         return Flowable.fromIterable(result);
                     }
                     return Flowable.empty();

@@ -11,13 +11,9 @@ import java.util.concurrent.TimeUnit;
  * Created by tony on 2017/10/19.
  */
 public class Proxy implements Delayed, Serializable {
-
     private static final long serialVersionUID = -8788193271053510562L;
-
-    private long timeInterval ;//任务间隔时间,单位ms
-
+    private long timeInterval;//任务间隔时间,单位ms
     private String id;
-
     private String ip;
     private int port;
     private String type;      //http、https
@@ -29,7 +25,8 @@ public class Proxy implements Delayed, Serializable {
     private int successfulTimes;//请求成功次数
     private double successfulAverageTime;//成功请求平均耗时
 
-    public Proxy() {}
+    public Proxy() {
+    }
 
     public Proxy(String ip, int port, long timeInterval) {
         this.ip = ip;
@@ -115,8 +112,8 @@ public class Proxy implements Delayed, Serializable {
         this.successfulTotalTime = successfulTotalTime;
     }
 
-    public void setTimeInterval(long timeInterval){
-        this.timeInterval=TimeUnit.NANOSECONDS.convert(timeInterval, TimeUnit.MILLISECONDS) + System.nanoTime();
+    public void setTimeInterval(long timeInterval) {
+        this.timeInterval = TimeUnit.NANOSECONDS.convert(timeInterval, TimeUnit.MILLISECONDS) + System.nanoTime();
     }
 
     @Override
@@ -126,11 +123,11 @@ public class Proxy implements Delayed, Serializable {
 
     @Override
     public int compareTo(Delayed o) {
-        Proxy element = (Proxy)o;
-        if (successfulAverageTime == 0.0d ||element.successfulAverageTime == 0.0d){
+        Proxy element = (Proxy) o;
+        if (successfulAverageTime == 0.0d || element.successfulAverageTime == 0.0d) {
             return 0;
         }
-        return successfulAverageTime > element.successfulAverageTime ? 1:(successfulAverageTime < element.successfulAverageTime ? -1 : 0);
+        return successfulAverageTime > element.successfulAverageTime ? 1 : (successfulAverageTime < element.successfulAverageTime ? -1 : 0);
     }
 
     public int getFailureTimes() {
@@ -198,15 +195,16 @@ public class Proxy implements Delayed, Serializable {
 
     /**
      * 将Proxy转换成一个HttpHost对象
+     *
      * @return
      */
     public HttpHost toHttpHost() {
 
-        return new HttpHost(ip,port,type);
+        return new HttpHost(ip, port, type);
     }
 
     public java.net.Proxy toJavaNetProxy() {
 
-        return new java.net.Proxy(java.net.Proxy.Type.HTTP,new InetSocketAddress(ip , port));
+        return new java.net.Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress(ip, port));
     }
 }
