@@ -28,11 +28,14 @@ public class ProxyPool {
      * @return
      */
     public static Proxy getProxy() {
-        return RandomUtil.randomEle(proxyList);
+        Proxy proxy = RandomUtil.randomEle(proxyList);
+        return proxy;
     }
 
     public static List<Proxy> getProxy(int count) {
-        return RandomUtil.randomEles(proxyList, count);
+        List<Proxy> proxies = RandomUtil.randomEles(proxyList, count);
+        proxyList.removeAll(proxies);
+        return proxies;
     }
 
 
@@ -43,7 +46,6 @@ public class ProxyPool {
     }
 
     public static void addProxyList(List<Proxy> proxies) {
-
         if (Preconditions.isNotBlank(proxies)) {
             proxyList.addAll(proxies);
         }
