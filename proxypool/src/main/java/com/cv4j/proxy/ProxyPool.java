@@ -1,6 +1,5 @@
 package com.cv4j.proxy;
 
-import cn.hutool.core.util.RandomUtil;
 import com.cv4j.proxy.domain.Proxy;
 import com.safframework.tony.common.utils.Preconditions;
 
@@ -10,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 代理池
