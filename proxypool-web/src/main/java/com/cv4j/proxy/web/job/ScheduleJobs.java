@@ -88,7 +88,7 @@ public class ScheduleJobs {
         proxyManager.start();
 
         //9.爬完以后，把数据转换为ProxyData并存到数据库
-        CopyOnWriteArrayList<ProxyData> list = getProxyDataList(ProxyPool.proxyList);
+        CopyOnWriteArrayList<ProxyData> list = getProxyDataList(new ArrayList<>(ProxyPool.proxyList));
         log.info("Job ProxyData list size = "+list.size());
         if (Preconditions.isNotBlank(list)) {
 
