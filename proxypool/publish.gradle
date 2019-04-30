@@ -1,0 +1,25 @@
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId 'proxypool'
+            from components.java
+            groupId 'com.reizx'
+            version project.version
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username nexusUsername
+                password nexusPassword
+            }
+            if (!project.version.endsWith('-SNAPSHOT')) {
+                url "${nexusHost}repository/hermes-release/"
+            } else {
+                url "${nexusHost}repository/hermes-snapshot/"
+            }
+        }
+    }
+}

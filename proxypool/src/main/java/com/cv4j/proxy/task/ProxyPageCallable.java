@@ -19,11 +19,11 @@ import java.util.concurrent.Callable;
  * Created by tony on 2017/10/25.
  */
 @Slf4j
-public class ProxyPageCallable implements Callable<List<Proxy>>{
+public class ProxyPageCallable implements Callable<List<Proxy>> {
 
     protected String url;
 
-    public ProxyPageCallable(String url){
+    public ProxyPageCallable(String url) {
         this.url = url;
     }
 
@@ -42,16 +42,16 @@ public class ProxyPageCallable implements Callable<List<Proxy>>{
 
             String logStr = sb.toString();
 
-            if(status == HttpStatus.SC_OK){
-                log.info("Success: "+logStr);
+            if (status == HttpStatus.SC_OK) {
+                log.info("Success: " + logStr);
                 return handle(page);
-            } else if (status>=400){ // http请求没有成功，尝试使用代理抓取数据源的策略
+            } else if (status >= 400) { // http请求没有成功，尝试使用代理抓取数据源的策略
                 Proxy proxy;
-                for (int i=0; i<3; i++) {
+                for (int i = 0; i < 3; i++) {
                     proxy = ProxyPool.getProxy(); // 从代理池中获取数据
-                    if (proxy!=null && HttpManager.get().checkProxy(proxy.toHttpHost())) { // 代理可用的情况下
+                    if (proxy != null && HttpManager.get().checkProxy(proxy.toHttpHost())) { // 代理可用的情况下
                         requestStartTime = System.currentTimeMillis();
-                        page = HttpManager.get().getWebPage(url,proxy);
+                        page = HttpManager.get().getWebPage(url, proxy);
                         status = page.getStatusCode();
                         requestEndTime = System.currentTimeMillis();
                         sb = new StringBuilder();
@@ -60,21 +60,21 @@ public class ProxyPageCallable implements Callable<List<Proxy>>{
                                 .append("  ,request cost time:").append(requestEndTime - requestStartTime).append("ms");
                         logStr = sb.toString();
                         if (status == HttpStatus.SC_OK) {
-                            log.info("Success: "+logStr);
+                            log.info("Success: " + logStr);
                             return handle(page);
                         } else {
-                            log.info("Failure: "+logStr);
+                            log.info("Failure: " + logStr);
                         }
                     }
                 }
 
             } else {
 
-                log.info("Failure: "+logStr);
+                log.info("Failure: " + logStr);
             }
 
         } catch (IOException e) {
-            log.info("IOException: e="+e.getMessage());
+            log.info("IOException: e=" + e.getMessage());
         }
 
         return new ArrayList<Proxy>();
@@ -82,19 +82,20 @@ public class ProxyPageCallable implements Callable<List<Proxy>>{
 
     /**
      * 将下载的proxy放入代理池
+     *
      * @param page
      */
-    private List<Proxy> handle(Page page){
+    private List<Proxy> handle(Page page) {
 
-        if (page == null || Preconditions.isBlank(page.getHtml())){
+        if (page == null || Preconditions.isBlank(page.getHtml())) {
             return new ArrayList<Proxy>();
         }
         List<Proxy> result = new ArrayList<>();
         ProxyListPageParser parser = ProxyListPageParserFactory.getProxyListPageParser(ProxyPool.proxyMap.get(url));
-        if (parser!=null) {
+        if (parser != null) {
             List<Proxy> proxyList = parser.parse(page.getHtml());
-            if(Preconditions.isNotBlank(proxyList)) {
-                for(Proxy p : proxyList){
+            if (Preconditions.isNotBlank(proxyList)) {
+                for (Proxy p : proxyList) {
                     if (!ProxyPool.proxyList.contains(p)) {
                         result.add(p);
                     }
